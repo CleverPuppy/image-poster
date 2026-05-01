@@ -1,16 +1,20 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>大字报生成工具</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
     <div class="container">
         <!-- 左侧工具栏 -->
         <div class="toolbar">
             <h2>🎨 工具栏</h2>
+            
+            <!-- 模板管理 -->
+            <div class="tool-section">
+                <h3>📋 模板管理</h3>
+                <div class="control-group">
+                    <label>选择模板:</label>
+                    <select id="templateSelect">
+                        <option value="">-- 请选择模板 --</option>
+                    </select>
+                </div>
+                <button id="applyTemplateBtn" class="btn btn-primary">应用模板</button>
+                <div id="templateDetails" class="template-details"></div>
+            </div>
             
             <!-- 背景管理 -->
             <div class="tool-section">
@@ -111,7 +115,3 @@
             <canvas id="posterCanvas"></canvas>
         </div>
     </div>
-
-    <script src="app.js?v=2"></script>
-</body>
-</html>
