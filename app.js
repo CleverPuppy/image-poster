@@ -375,20 +375,37 @@ function render() {
             ctx.font = fontString;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            // 测量文字宽度并缓存
-            var metrics = ctx.measureText(element.content);
-            element.cachedWidth = metrics.width;
-            console.log('📐 测量宽度:', metrics.width, '(已缓存)');
-            // 描边
-            if (element.strokeWidth > 0) {
-                ctx.strokeStyle = element.strokeColor;
-                ctx.lineWidth = element.strokeWidth;
-                ctx.lineJoin = 'round';
-                ctx.strokeText(element.content, 0, 0);
-            }
-            // 填充
-            ctx.fillStyle = element.color;
-            ctx.fillText(element.content, 0, 0);
+            // 处理多行文本
+            var lines = element.content.split('\n');
+            var lineHeight_1 = element.lineHeight || 1.2; // 默认行高为字体大小的1.2倍
+            var totalHeight = lines.length * element.fontSize * lineHeight_1;
+            // 测量每行宽度并缓存最宽行的宽度
+            var maxWidth_1 = 0;
+            lines.forEach(function (line) {
+                var metrics = ctx.measureText(line);
+                if (metrics.width > maxWidth_1) {
+                    maxWidth_1 = metrics.width;
+                }
+            });
+            element.cachedWidth = maxWidth_1;
+            element.cachedHeight = totalHeight;
+            console.log('📐 测量宽度:', maxWidth_1, '高度:', totalHeight, '(已缓存，行数:', lines.length + ')');
+            // 计算起始 Y 坐标（使文本垂直居中）
+            var startY_1 = -((lines.length - 1) * element.fontSize * lineHeight_1) / 2;
+            // 绘制每一行
+            lines.forEach(function (line, lineIndex) {
+                var yOffset = startY_1 + lineIndex * element.fontSize * lineHeight_1;
+                // 描边
+                if (element.strokeWidth > 0) {
+                    ctx.strokeStyle = element.strokeColor;
+                    ctx.lineWidth = element.strokeWidth;
+                    ctx.lineJoin = 'round';
+                    ctx.strokeText(line, 0, yOffset);
+                }
+                // 填充
+                ctx.fillStyle = element.color;
+                ctx.fillText(line, 0, yOffset);
+            });
             // 验证实际设置的字体
             console.log('✅ Canvas 实际 font:', ctx.font);
         }
@@ -412,18 +429,29 @@ function render() {
         ctx.lineWidth = 2;
         ctx.setLineDash([5, 5]);
         if (element.type === 'text') {
-            // 使用缓存的文字宽度（在第一个循环中计算的）
-            var textWidth = element.cachedWidth || ctx.measureText(element.content).width;
-            var textHeight = element.fontSize;
+            // 使用缓存的文字宽度和高度（在第一个循环中计算的）
+            var textWidth = element.cachedWidth || (function () {
+                var lines = element.content.split('\n');
+                var maxWidth = 0;
+                lines.forEach(function (line) {
+                    var metrics = ctx.measureText(line);
+                    if (metrics.width > maxWidth) {
+                        maxWidth = metrics.width;
+                    }
+                });
+                return maxWidth;
+            })();
+            var textHeight = element.cachedHeight || element.fontSize;
             // 增加额外的边距以适应中文字符的渲染
             var padding = 10;
             console.log('📏 选中框尺寸:', {
                 文字宽度: textWidth,
                 文字高度: textHeight,
                 fontSize: element.fontSize,
+                行数: element.content.split('\n').length,
                 选中框宽度: textWidth + padding * 2,
                 选中框高度: textHeight + padding * 2,
-                使用了缓存: !!element.cachedWidth
+                使用了缓存: !!(element.cachedWidth && element.cachedHeight)
             });
             // 绘制选中框，使用更大的边距
             ctx.strokeRect(-textWidth / 2 - padding, -textHeight / 2 - padding, textWidth + padding * 2, textHeight + padding * 2);

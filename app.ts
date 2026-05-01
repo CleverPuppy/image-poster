@@ -15,7 +15,9 @@ interface TextElement extends ElementBase {
     color: string;
     strokeColor: string;
     strokeWidth: number;
-    cachedWidth?: number; // 缓存的文字宽度
+    lineHeight?: number; // 行高（基于 fontSize 的倍数）
+    cachedWidth?: number; // 缓存的文字宽度（最宽行的宽度）
+    cachedHeight?: number; // 缓存的文本总高度
 }
 
 interface StickerElement extends ElementBase {
@@ -482,22 +484,42 @@ function render(): void {
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             
-            // 测量文字宽度并缓存
-            const metrics = ctx.measureText(element.content);
-            element.cachedWidth = metrics.width;
-            console.log('📐 测量宽度:', metrics.width, '(已缓存)');
+            // 处理多行文本
+            const lines = element.content.split('\n');
+            const lineHeight = element.lineHeight || 1.2; // 默认行高为字体大小的1.2倍
+            const totalHeight = lines.length * element.fontSize * lineHeight;
             
-            // 描边
-            if (element.strokeWidth > 0) {
-                ctx.strokeStyle = element.strokeColor;
-                ctx.lineWidth = element.strokeWidth;
-                ctx.lineJoin = 'round';
-                ctx.strokeText(element.content, 0, 0);
-            }
+            // 测量每行宽度并缓存最宽行的宽度
+            let maxWidth = 0;
+            lines.forEach(line => {
+                const metrics = ctx.measureText(line);
+                if (metrics.width > maxWidth) {
+                    maxWidth = metrics.width;
+                }
+            });
+            element.cachedWidth = maxWidth;
+            element.cachedHeight = totalHeight;
+            console.log('📐 测量宽度:', maxWidth, '高度:', totalHeight, '(已缓存，行数:', lines.length + ')');
             
-            // 填充
-            ctx.fillStyle = element.color;
-            ctx.fillText(element.content, 0, 0);
+            // 计算起始 Y 坐标（使文本垂直居中）
+            const startY = -((lines.length - 1) * element.fontSize * lineHeight) / 2;
+            
+            // 绘制每一行
+            lines.forEach((line, lineIndex) => {
+                const yOffset = startY + lineIndex * element.fontSize * lineHeight;
+                
+                // 描边
+                if (element.strokeWidth > 0) {
+                    ctx.strokeStyle = element.strokeColor;
+                    ctx.lineWidth = element.strokeWidth;
+                    ctx.lineJoin = 'round';
+                    ctx.strokeText(line, 0, yOffset);
+                }
+                
+                // 填充
+                ctx.fillStyle = element.color;
+                ctx.fillText(line, 0, yOffset);
+            });
             
             // 验证实际设置的字体
             console.log('✅ Canvas 实际 font:', ctx.font);
@@ -525,9 +547,20 @@ function render(): void {
         ctx.setLineDash([5, 5]);
         
         if (element.type === 'text') {
-            // 使用缓存的文字宽度（在第一个循环中计算的）
-            const textWidth = element.cachedWidth || ctx.measureText(element.content).width;
-            const textHeight = element.fontSize;
+            // 使用缓存的文字宽度和高度（在第一个循环中计算的）
+            const textWidth = element.cachedWidth || (() => {
+                const lines = element.content.split('\n');
+                let maxWidth = 0;
+                lines.forEach(line => {
+                    const metrics = ctx.measureText(line);
+                    if (metrics.width > maxWidth) {
+                        maxWidth = metrics.width;
+                    }
+                });
+                return maxWidth;
+            })();
+            
+            const textHeight = element.cachedHeight || element.fontSize;
             
             // 增加额外的边距以适应中文字符的渲染
             const padding = 10;
@@ -536,9 +569,10 @@ function render(): void {
                 文字宽度: textWidth,
                 文字高度: textHeight,
                 fontSize: element.fontSize,
+                行数: element.content.split('\n').length,
                 选中框宽度: textWidth + padding * 2,
                 选中框高度: textHeight + padding * 2,
-                使用了缓存: !!element.cachedWidth
+                使用了缓存: !!(element.cachedWidth && element.cachedHeight)
             });
             
             // 绘制选中框，使用更大的边距
@@ -649,7 +683,7 @@ function clearBackground(): void {
 
 // 绑定文字控制
 function bindTextControls(): void {
-    const textContent = document.getElementById('textContent')! as HTMLInputElement;
+    const textContent = document.getElementById('textContent')! as HTMLTextAreaElement;
     const textSize = document.getElementById('textSize')! as HTMLInputElement;
     const textColor = document.getElementById('textColor')! as HTMLInputElement;
     const textStrokeColor = document.getElementById('textStrokeColor')! as HTMLInputElement;
@@ -881,7 +915,7 @@ function updateControlPanel(): void {
 function syncTextControls(): void {
     if (selectedElement?.type !== 'text') return;
     
-    const textContent = document.getElementById('textContent')! as HTMLInputElement;
+    const textContent = document.getElementById('textContent')! as HTMLTextAreaElement;
     const textSize = document.getElementById('textSize')! as HTMLInputElement;
     const textColor = document.getElementById('textColor')! as HTMLInputElement;
     const textStrokeColor = document.getElementById('textStrokeColor')! as HTMLInputElement;

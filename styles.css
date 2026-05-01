@@ -136,6 +136,16 @@ body {
     font-size: 14px;
 }
 
+.control-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+}
+
 .control-group input[type="range"] {
     width: 70%;
     margin-right: 10px;
