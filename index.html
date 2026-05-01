@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大字报生成工具</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧工具栏 -->
+        <div class="toolbar">
+            <h2>🎨 工具栏</h2>
+            
+            <!-- 背景管理 -->
+            <div class="tool-section">
+                <h3>📷 背景管理</h3>
+                <button id="uploadBgBtn" class="btn btn-primary">上传底图</button>
+                <input type="file" id="bgInput" accept="image/*" style="display: none;">
+                <button id="clearBgBtn" class="btn btn-secondary">清除背景</button>
+            </div>
+
+            <!-- 文字管理 -->
+            <div class="tool-section">
+                <h3>✏️ 花字管理</h3>
+                <button id="addTextBtn" class="btn btn-primary">添加文字</button>
+                <div id="textControls" class="controls-panel" style="display: none;">
+                    <div class="control-group">
+                        <label>文字内容:</label>
+                        <input type="text" id="textContent" placeholder="输入文字">
+                    </div>
+                    <div class="control-group">
+                        <label>字体大小:</label>
+                        <input type="range" id="textSize" min="20" max="200" value="60">
+                        <span id="textSizeValue">60px</span>
+                    </div>
+                    <div class="control-group">
+                        <label>字体颜色:</label>
+                        <input type="color" id="textColor" value="#000000">
+                    </div>
+                    <div class="control-group">
+                        <label>描边颜色:</label>
+                        <input type="color" id="textStrokeColor" value="#ffffff">
+                    </div>
+                    <div class="control-group">
+                        <label>描边宽度:</label>
+                        <input type="range" id="textStrokeWidth" min="0" max="20" value="3">
+                        <span id="textStrokeWidthValue">3px</span>
+                    </div>
+                    <div class="control-group">
+                        <label>旋转角度:</label>
+                        <input type="range" id="textRotation" min="0" max="360" value="0">
+                        <span id="textRotationValue">0°</span>
+                    </div>
+                    <div class="control-group">
+                        <label>字体选择:</label>
+                        <select id="fontFamily">
+                            <option value="Arial">Arial</option>
+                            <option value="Microsoft YaHei">微软雅黑</option>
+                            <option value="SimHei">黑体</option>
+                            <option value="SimSun">宋体</option>
+                            <option value="KaiTi">楷体</option>
+                            <option value="FangSong">仿宋</option>
+                        </select>
+                    </div>
+                    <button id="deleteTextBtn" class="btn btn-danger">删除文字</button>
+                </div>
+            </div>
+
+            <!-- 贴纸管理 -->
+            <div class="tool-section">
+                <h3>😊 贴纸管理</h3>
+                <div class="emoji-grid">
+                    <div class="emoji-item" data-emoji="😀">😀</div>
+                    <div class="emoji-item" data-emoji="😂">😂</div>
+                    <div class="emoji-item" data-emoji="😍">😍</div>
+                    <div class="emoji-item" data-emoji="👍">👍</div>
+                    <div class="emoji-item" data-emoji="❤️">❤️</div>
+                    <div class="emoji-item" data-emoji="🔥">🔥</div>
+                    <div class="emoji-item" data-emoji="⭐">⭐</div>
+                    <div class="emoji-item" data-emoji="🎉">🎉</div>
+                    <div class="emoji-item" data-emoji="💯">💯</div>
+                    <div class="emoji-item" data-emoji="✨">✨</div>
+                    <div class="emoji-item" data-emoji="🚀">🚀</div>
+                    <div class="emoji-item" data-emoji="💪">💪</div>
+                </div>
+                <div id="stickerControls" class="controls-panel" style="display: none;">
+                    <div class="control-group">
+                        <label>贴纸大小:</label>
+                        <input type="range" id="stickerSize" min="30" max="200" value="80">
+                        <span id="stickerSizeValue">80px</span>
+                    </div>
+                    <div class="control-group">
+                        <label>旋转角度:</label>
+                        <input type="range" id="stickerRotation" min="0" max="360" value="0">
+                        <span id="stickerRotationValue">0°</span>
+                    </div>
+                    <button id="deleteStickerBtn" class="btn btn-danger">删除贴纸</button>
+                </div>
+            </div>
+
+            <!-- 导出功能 -->
+            <div class="tool-section">
+                <h3>💾 导出</h3>
+                <button id="exportBtn" class="btn btn-success">导出图片</button>
+            </div>
+        </div>
+
+        <!-- 画布区域 -->
+        <div class="canvas-area">
+            <canvas id="posterCanvas"></canvas>
+        </div>
+    </div>
+
+    <script src="app.js?v=2"></script>
+</body>
+</html>
